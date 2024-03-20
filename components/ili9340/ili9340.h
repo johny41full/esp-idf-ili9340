@@ -17,7 +17,7 @@
 #define PURPLE rgb565(128,   0, 128) // 0x8010
 
 typedef enum {DIRECTION0, DIRECTION90, DIRECTION180, DIRECTION270} DIRECTION;
-
+  
 typedef struct {
 	uint16_t _model;
 	uint16_t _width;
