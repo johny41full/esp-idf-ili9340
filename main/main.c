@@ -2341,6 +2341,109 @@ esp_err_t mountSPIFFS(char * path, char * label, int max_files) {
 	return ret;
 }
 
+void my_task(void *arg){
+// set font file
+	FontxFile fx16G[2];
+	// FontxFile fx24G[2];
+	// FontxFile fx32G[2];
+	// FontxFile fx32L[2];
+	InitFontx(fx16G,"/spiffs/ILGH16XB.FNT",""); // 8x16Dot Gothic
+	// InitFontx(fx24G,"/spiffs/ILGH24XB.FNT",""); // 12x24Dot Gothic
+	// InitFontx(fx32G,"/spiffs/ILGH32XB.FNT",""); // 16x32Dot Gothic
+	// InitFontx(fx32L,"/spiffs/LATIN32B.FNT",""); // 16x32Dot Latinc
+
+	// FontxFile fx16M[2];
+	// FontxFile fx24M[2];
+	// FontxFile fx32M[2];
+	// InitFontx(fx16M,"/spiffs/ILMH16XB.FNT",""); // 8x16Dot Mincyo
+	// InitFontx(fx24M,"/spiffs/ILMH24XB.FNT",""); // 12x24Dot Mincyo
+	// InitFontx(fx32M,"/spiffs/ILMH32XB.FNT",""); // 16x32Dot Mincyo
+	
+	TFT_t dev;
+#if CONFIG_XPT2046_ENABLE_SAME_BUS
+	ESP_LOGI(TAG, "Enable Touch Contoller using the same SPI bus as TFT");
+	int XPT_MISO_GPIO = CONFIG_XPT_MISO_GPIO;
+	int XPT_CS_GPIO = CONFIG_XPT_CS_GPIO;
+	int XPT_IRQ_GPIO = CONFIG_XPT_IRQ_GPIO;
+	int XPT_SCLK_GPIO = -1;
+	int XPT_MOSI_GPIO = -1;
+#elif CONFIG_XPT2046_ENABLE_DIFF_BUS
+	ESP_LOGI(TAG, "Enable Touch Contoller using the different SPI bus from TFT");
+	int XPT_MISO_GPIO = CONFIG_XPT_MISO_GPIO;
+	int XPT_CS_GPIO = CONFIG_XPT_CS_GPIO;
+	int XPT_IRQ_GPIO = CONFIG_XPT_IRQ_GPIO;
+	int XPT_SCLK_GPIO = CONFIG_XPT_SCLK_GPIO;
+	int XPT_MOSI_GPIO = CONFIG_XPT_MOSI_GPIO;
+#else
+	ESP_LOGI(TAG, "Disable Touch Contoller");
+	int XPT_MISO_GPIO = -1;
+	int XPT_CS_GPIO = -1;
+	int XPT_IRQ_GPIO = -1;
+	int XPT_SCLK_GPIO = -1;
+	int XPT_MOSI_GPIO = -1;
+#endif
+	spi_master_init(&dev, CONFIG_MOSI_GPIO, CONFIG_SCLK_GPIO, CONFIG_TFT_CS_GPIO, CONFIG_DC_GPIO, 
+		CONFIG_RESET_GPIO, CONFIG_BL_GPIO, XPT_MISO_GPIO, XPT_CS_GPIO, XPT_IRQ_GPIO, XPT_SCLK_GPIO, XPT_MOSI_GPIO);
+
+#if CONFIG_ILI9225
+	uint16_t model = 0x9225;
+#endif
+#if CONFIG_ILI9225G
+	uint16_t model = 0x9226;
+#endif
+#if CONFIG_ILI9340
+	uint16_t model = 0x9340;
+#endif
+#if CONFIG_ILI9341
+	uint16_t model = 0x9341;
+#endif
+#if CONFIG_ST7735
+	uint16_t model = 0x7735;
+#endif
+#if CONFIG_ST7796
+	uint16_t model = 0x7796;
+#endif
+	lcdInit(&dev, model, CONFIG_WIDTH, CONFIG_HEIGHT, CONFIG_OFFSETX, CONFIG_OFFSETY);
+
+#if CONFIG_INVERSION
+	ESP_LOGI(TAG, "Enable Display Inversion");
+	lcdInversionOn(&dev);
+#endif
+
+#if CONFIG_RGB_COLOR
+	ESP_LOGI(TAG, "Change BGR filter to RGB filter");
+	lcdBGRFilter(&dev);
+#endif
+
+#if CONFIG_XPT2046_ENABLE_SAME_BUS || CONFIG_XPT2046_ENABLE_DIFF_BUS
+#if CONFIG_XPT_CHECK
+	TouchPosition(&dev, fx24G, CONFIG_WIDTH, CONFIG_HEIGHT, 1000);
+#endif
+#endif
+	lcdFillScreen (&dev, WHITE);
+	lcdSetFontDirection(&dev,3);
+	uint8_t test[24] = {0};
+	uint8_t test2[24] = {0};
+	int a=0;
+	sprintf((char *)test, "ALA ma kota %d", a);
+	int x,y;
+	while(1){
+		sprintf((char *)test, "ALA ma kota %d", a);
+		lcdDrawFillRect(&dev,100,100,120,240, CYAN);
+		lcdDrawFillRect2(&dev, 10,10,10, BLACK);
+		lcdDrawFillRect2(&dev, 200,10,10, BLUE);
+		lcdDrawFillRect2(&dev, 10,300,10, PURPLE);
+		lcdDrawFillRect2(&dev, 200,300,10, YELLOW);
+		lcdDrawString(&dev,fx16G, 200,300, test, RED );
+		if(touch_getxy(&dev, &x,&y)){
+			sprintf((char *)test2, "x: %d	y: %d", x,y);
+			lcdDrawFillRect(&dev,120,50,150,200, YELLOW);
+			lcdDrawString(&dev,fx16G, 150,200, test2, GREEN );
+		}
+		a++;
+		vTaskDelay(100/ portTICK_PERIOD_MS);
+	}
+}
 
 void app_main(void)
 {
@@ -2370,6 +2473,6 @@ void app_main(void)
 	ret = mountSPIFFS("/images", "storage2", 14);
 	if (ret != ESP_OK) return;
 	listSPIFFS("/images/");
-
-	xTaskCreate(ILI9341, "ILI9341", 1024*6, NULL, 2, NULL);
+	xTaskCreate(my_task, "mytask", 1024*6, NULL, 3, NULL);
+	//xTaskCreate(ILI9341, "ILI9341", 1024*6, NULL, 2, NULL);
 }
