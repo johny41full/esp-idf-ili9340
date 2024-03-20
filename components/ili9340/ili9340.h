@@ -16,6 +16,9 @@
 #define CYAN   rgb565(  0, 156, 209) // 0x04FA
 #define PURPLE rgb565(128,   0, 128) // 0x8010
 
+#define SETUP_ORIENTATION 3
+
+
 typedef enum {DIRECTION0, DIRECTION90, DIRECTION180, DIRECTION270} DIRECTION;
   
 typedef struct {
@@ -25,6 +28,7 @@ typedef struct {
 	uint16_t _offsetx;
 	uint16_t _offsety;
 	uint16_t _font_direction;
+	uint16_t _display_direction;
 	uint16_t _font_fill;
 	uint16_t _font_fill_color;
 	uint16_t _font_underline;
@@ -59,7 +63,7 @@ bool spi_master_write_colors(TFT_t * dev, uint16_t * colors, uint16_t size);
 void delayMS(int ms);
 void lcdWriteRegisterWord(TFT_t * dev, uint16_t addr, uint16_t data);
 void lcdWriteRegisterByte(TFT_t * dev, uint8_t addr, uint16_t data);
-void lcdInit(TFT_t * dev, uint16_t model, int width, int height, int offsetx, int offsety);
+void lcdInit(TFT_t * dev, uint16_t model, int width, int height, int offsetx, int offsety, uint16_t direction);
 void lcdDrawPixel(TFT_t * dev, uint16_t x, uint16_t y, uint16_t color);
 void lcdDrawMultiPixels(TFT_t * dev, uint16_t x, uint16_t y, uint16_t size, uint16_t * colors);
 void lcdDrawFillRect(TFT_t * dev, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);

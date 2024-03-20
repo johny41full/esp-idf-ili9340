@@ -43,6 +43,7 @@ static const int XPT_Frequency = 1*1000*1000;
 //#define XPT_MISO 19
 //#define XPT_CS	4
 //#define XPT_IRQ 5
+
 #endif
 
 void spi_master_init(TFT_t * dev, int16_t TFT_MOSI, int16_t TFT_SCLK, int16_t TFT_CS, int16_t GPIO_DC, int16_t GPIO_RESET, int16_t GPIO_BL,
@@ -289,7 +290,7 @@ void lcdWriteRegisterByte(TFT_t * dev, uint8_t addr, uint16_t data)
 
 
 
-void lcdInit(TFT_t * dev, uint16_t model, int width, int height, int offsetx, int offsety)
+void lcdInit(TFT_t * dev, uint16_t model, int width, int height, int offsetx, int offsety, uint16_t direction)
 {
 	dev->_model = model;
 	dev->_width = width;
@@ -299,6 +300,7 @@ void lcdInit(TFT_t * dev, uint16_t model, int width, int height, int offsetx, in
 	dev->_font_direction = DIRECTION0;
 	dev->_font_fill = false;
 	dev->_font_underline = false;
+	dev->_display_direction = direction;
 
 	if (dev->_model == 0x7796) {
 		ESP_LOGI(TAG,"Your TFT is ST7796");
@@ -561,6 +563,12 @@ void lcdInit(TFT_t * dev, uint16_t model, int width, int height, int offsetx, in
 // y:Y coordinate
 // color:color
 void lcdDrawPixel(TFT_t * dev, uint16_t x, uint16_t y, uint16_t color){
+	if(dev->_display_direction ==3){
+		uint16_t z = y;
+		y = dev->_height -x;
+		x = z;
+		
+	}
 	if (x >= dev->_width) return;
 	if (y >= dev->_height) return;
 
@@ -613,6 +621,12 @@ void lcdDrawPixel(TFT_t * dev, uint16_t x, uint16_t y, uint16_t color){
 // size:Number of colors
 // colors:colors
 void lcdDrawMultiPixels(TFT_t * dev, uint16_t x, uint16_t y, uint16_t size, uint16_t * colors) {
+		if(dev->_display_direction ==3){
+		uint16_t z = y;
+		y = dev->_height -x;
+		x = z;
+		
+	}
 	if (x+size > dev->_width) return;
 	if (y >= dev->_height) return;
 
@@ -676,6 +690,18 @@ void lcdDrawMultiPixels(TFT_t * dev, uint16_t x, uint16_t y, uint16_t size, uint
 // y2:End Y coordinate
 // color:color
 void lcdDrawFillRect(TFT_t * dev, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
+
+	if(dev->_display_direction ==3){
+		uint16_t x3,x4;
+		x3=x1;
+		x4=x2;
+		
+		x1 = y1;		
+		x2 = y2;
+		y1 = dev->_height - x4;
+		y2 = dev->_height - x3;	
+	}
+
 	if (x1 >= dev->_width) return;
 	if (x2 >= dev->_width) x2=dev->_width-1;
 	if (y1 >= dev->_height) return;
@@ -816,7 +842,11 @@ void lcdBGRFilter(TFT_t * dev) {
 // Fill screen
 // color:color
 void lcdFillScreen(TFT_t * dev, uint16_t color) {
-	lcdDrawFillRect(dev, 0, 0, dev->_width-1, dev->_height-1, color);
+	if(dev->_display_direction ==3){
+		lcdDrawFillRect(dev, 0, 0,  dev->_height-1,dev->_width-1, color);
+	}else{
+		lcdDrawFillRect(dev, 0, 0, dev->_width-1, dev->_height-1, color);
+	}
 }
 
 // Draw line

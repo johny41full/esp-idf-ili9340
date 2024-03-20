@@ -1065,7 +1065,7 @@ TickType_t CodeTest(TFT_t * dev, FontxFile *fx, int width, int height, uint16_t 
 	return diffTick;
 }
 
-#if CONFIG_XPT2046_ENABLE_SAME_BUS || CONFIG_XPT2046_ENABLE_DIFF_BUS
+#if CONFIG_XPT2046_ENABLE_SAME_BUS || CONFIG_XPT2046_ENABLE_DIFF_BUS 
 void TouchPosition(TFT_t * dev, FontxFile *fx, int width, int height, TickType_t timeout) {
 	ESP_LOGW(__FUNCTION__, "Start TouchPosition");
 
@@ -2089,7 +2089,7 @@ void ILI9341(void *pvParameters)
 #if CONFIG_ST7796
 	uint16_t model = 0x7796;
 #endif
-	lcdInit(&dev, model, CONFIG_WIDTH, CONFIG_HEIGHT, CONFIG_OFFSETX, CONFIG_OFFSETY);
+	lcdInit(&dev, model, CONFIG_WIDTH, CONFIG_HEIGHT, CONFIG_OFFSETX, CONFIG_OFFSETY, SETUP_ORIENTATION);
 
 #if CONFIG_INVERSION
 	ESP_LOGI(TAG, "Enable Display Inversion");
@@ -2341,6 +2341,7 @@ esp_err_t mountSPIFFS(char * path, char * label, int max_files) {
 	return ret;
 }
 
+
 void my_task(void *arg){
 // set font file
 	FontxFile fx16G[2];
@@ -2403,7 +2404,7 @@ void my_task(void *arg){
 #if CONFIG_ST7796
 	uint16_t model = 0x7796;
 #endif
-	lcdInit(&dev, model, CONFIG_WIDTH, CONFIG_HEIGHT, CONFIG_OFFSETX, CONFIG_OFFSETY);
+	lcdInit(&dev, model, CONFIG_WIDTH, CONFIG_HEIGHT, CONFIG_OFFSETX, CONFIG_OFFSETY, SETUP_ORIENTATION);
 
 #if CONFIG_INVERSION
 	ESP_LOGI(TAG, "Enable Display Inversion");
@@ -2420,25 +2421,35 @@ void my_task(void *arg){
 	TouchPosition(&dev, fx24G, CONFIG_WIDTH, CONFIG_HEIGHT, 1000);
 #endif
 #endif
+	TouchCalibration(&dev, fx16G, 240, 320);
 	lcdFillScreen (&dev, WHITE);
-	lcdSetFontDirection(&dev,3);
+	lcdSetFontDirection(&dev,0);
 	uint8_t test[24] = {0};
 	uint8_t test2[24] = {0};
 	int a=0;
 	sprintf((char *)test, "ALA ma kota %d", a);
 	int x,y;
+	int xa=0;
+	int ya = 0;
+	int xd=160;
 	while(1){
 		sprintf((char *)test, "ALA ma kota %d", a);
-		lcdDrawFillRect(&dev,100,100,120,240, CYAN);
+		lcdDrawRect2(&dev, 280,180,40,BLACK);
+		if(xd>=150)lcdDrawFillRect(&dev,150,130,xd,150, CYAN);
 		lcdDrawFillRect2(&dev, 10,10,10, BLACK);
 		lcdDrawFillRect2(&dev, 200,10,10, BLUE);
-		lcdDrawFillRect2(&dev, 10,300,10, PURPLE);
-		lcdDrawFillRect2(&dev, 200,300,10, YELLOW);
-		lcdDrawString(&dev,fx16G, 200,300, test, RED );
+		lcdDrawFillRect2(&dev, 10,200,10, PURPLE);
+		lcdDrawFillRect2(&dev, 200,200,10, YELLOW);
+		xd=lcdDrawString(&dev,fx16G, 150,150, test, RED );		
+		lcdDrawFillArrow(&dev, 20,30,180,120,10,0x1E42);
+		lcdDrawRoundRect(&dev,30,30,290,210,15,PURPLE);
+
 		if(touch_getxy(&dev, &x,&y)){
-			sprintf((char *)test2, "x: %d	y: %d", x,y);
+			
+			ConvertCoordinate(&dev, x, y, &xa, &ya);
+			sprintf((char *)test2, "x: %d	y: %d", xa,ya);
 			lcdDrawFillRect(&dev,120,50,150,200, YELLOW);
-			lcdDrawString(&dev,fx16G, 150,200, test2, GREEN );
+			lcdDrawString(&dev,fx16G, 150,240, test2, GREEN );
 		}
 		a++;
 		vTaskDelay(100/ portTICK_PERIOD_MS);
