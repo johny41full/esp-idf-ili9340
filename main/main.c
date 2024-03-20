@@ -1064,7 +1064,7 @@ TickType_t CodeTest(TFT_t * dev, FontxFile *fx, int width, int height, uint16_t 
 	ESP_LOGI(__FUNCTION__, "elapsed time[ms]:%"PRIu32,diffTick*portTICK_PERIOD_MS);
 	return diffTick;
 }
-
+#define CONFIG_XPT2046_ENABLE_SAME_BUS 1
 #if CONFIG_XPT2046_ENABLE_SAME_BUS || CONFIG_XPT2046_ENABLE_DIFF_BUS 
 void TouchPosition(TFT_t * dev, FontxFile *fx, int width, int height, TickType_t timeout) {
 	ESP_LOGW(__FUNCTION__, "Start TouchPosition");
@@ -1205,9 +1205,9 @@ void TouchCalibration(TFT_t * dev, FontxFile *fx, int width, int height) {
 	//lcdDrawFillCircle(dev, 10, 10, 10, CYAN);
 	lcdDrawFillCircle(dev, dev->_min_xc, dev->_min_yc, 10, CYAN);
 	strcpy((char *)ascii, "Calibration");
-	ypos = ((height - fontHeight) / 2) - 1;
+	ypos = (( height - fontHeight) / 2) - 1;
 	xpos = (width + (strlen((char *)ascii) * fontWidth)) / 2;
-	lcdSetFontDirection(dev, DIRECTION180);
+	lcdSetFontDirection(dev, DIRECTION0);
 	lcdDrawString(dev, fx, xpos, ypos, ascii, WHITE);
 	ypos = ypos - fontHeight;
 	int _xpos = xpos;
@@ -1250,12 +1250,12 @@ void TouchCalibration(TFT_t * dev, FontxFile *fx, int width, int height) {
 	} // end while
 
 	lcdFillScreen(dev, BLACK);
-	dev->_max_xc = width-10;
-	dev->_max_yc = height-10;
+	dev->_max_xc = width -10;
+	dev->_max_yc = height -10;
 	//lcdDrawFillCircle(dev, width-10, height-10, 10, CYAN);
 	lcdDrawFillCircle(dev, dev->_max_xc, dev->_max_yc, 10, CYAN);
-	ypos = ((height - fontHeight) / 2) - 1;
-	xpos = (width + (strlen((char *)ascii) * fontWidth)) / 2;
+	ypos = (( height- fontHeight) / 2) - 1;
+	xpos = (width  + (strlen((char *)ascii) * fontWidth)) / 2;
 	lcdDrawString(dev, fx, xpos, ypos, ascii, WHITE);
 	ypos = ypos - fontHeight;
 	_xpos = xpos;
@@ -2421,7 +2421,7 @@ void my_task(void *arg){
 	TouchPosition(&dev, fx24G, CONFIG_WIDTH, CONFIG_HEIGHT, 1000);
 #endif
 #endif
-	TouchCalibration(&dev, fx16G, 240, 320);
+	TouchCalibration(&dev, fx16G, 320, 240);
 	lcdFillScreen (&dev, WHITE);
 	lcdSetFontDirection(&dev,0);
 	uint8_t test[24] = {0};
@@ -2432,6 +2432,9 @@ void my_task(void *arg){
 	int xa=0;
 	int ya = 0;
 	int xd=160;
+	int xc= 160;
+	int xz = 50;
+	uint8_t test3[15] = {0};
 	while(1){
 		sprintf((char *)test, "ALA ma kota %d", a);
 		lcdDrawRect2(&dev, 280,180,40,BLACK);
@@ -2448,11 +2451,14 @@ void my_task(void *arg){
 			
 			ConvertCoordinate(&dev, x, y, &xa, &ya);
 			sprintf((char *)test2, "x: %d	y: %d", xa,ya);
-			lcdDrawFillRect(&dev,120,50,150,200, YELLOW);
-			lcdDrawString(&dev,fx16G, 150,240, test2, GREEN );
+			if(xc>=150)lcdDrawFillRect(&dev,150,220,xc,240, BLACK);
+			xc=lcdDrawString(&dev,fx16G, 150,240, test2, GREEN );
+			sprintf((char*)test3, "x: %d	y: %d",x,y);
+			if(xz>=50)lcdDrawFillRect(&dev,50,40,xz,60, WHITE);
+			xz=lcdDrawString(&dev,fx16G, 50,60, test3, 0x1E42 );
 		}
 		a++;
-		vTaskDelay(100/ portTICK_PERIOD_MS);
+		vTaskDelay(10/ portTICK_PERIOD_MS);
 	}
 }
 

@@ -1645,7 +1645,13 @@ bool touch_getxy(TFT_t *dev, int *xp, int *yp) {
 	int level = gpio_get_level(dev->_irq);
 	ESP_LOGD(__FUNCTION__, "gpio_get_level=%d", level);
 	if (level == 1) return false; // Not touched
+	if(dev->_display_direction ==3){
+	*yp = xptGetit(dev, (XPT_START | XPT_XPOS | XPT_SER) );
+	*xp = xptGetit(dev, (XPT_START | XPT_YPOS | XPT_SER) );
+	}else{
 	*xp = xptGetit(dev, (XPT_START | XPT_XPOS | XPT_SER) );
 	*yp = xptGetit(dev, (XPT_START | XPT_YPOS | XPT_SER) );
+	}
+
 	return true;
 }
