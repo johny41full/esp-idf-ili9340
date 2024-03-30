@@ -100,6 +100,10 @@ void lcdBacklightOn(TFT_t * dev);
 void lcdSetScrollArea(TFT_t * dev, uint16_t tfa, uint16_t vsa, uint16_t bfa);
 void lcdResetScrollArea(TFT_t * dev, uint16_t vsa);
 void lcdScroll(TFT_t * dev, uint16_t vsp);
+esp_err_t ConvertCoordinate(TFT_t * dev, int xp, int yp, int *xpos, int *ypos);
+void TouchCalibration(TFT_t * dev, FontxFile *fx, int width, int height);
+//bool TouchGetCalibration(TFT_t * dev);
+void TouchPosition(TFT_t * dev, FontxFile *fx, int width, int height, TickType_t timeout);
 int xptGetit(TFT_t * dev, int cmd);
 bool touch_getxy(TFT_t *dev, int *xp, int *yp);
 #endif /* MAIN_ILI9340_H_ */

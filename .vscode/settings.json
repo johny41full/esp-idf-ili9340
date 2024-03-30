@@ -2,5 +2,11 @@
     "C_Cpp.errorSquiggles": "disabled",
     "idf.portWin": "COM5",
     "idf.flashType": "UART",
-    "idf.adapterTargetName": "esp32"
+    "idf.adapterTargetName": "esp32",
+    "files.associations": {
+        "ili9340.h": "c",
+        "fontx.h": "c",
+        "decode_png.h": "c",
+        "pngle.h": "c"
+    }
 }

@@ -1,7 +1,7 @@
 {
     "version":            "1",
     "project_name":       "ili9340",
-    "project_version":    "1",
+    "project_version":    "5278f59-dirty",
     "project_path":       "D:/projekty_esp/esp-idf-ili9340",
     "idf_path":           "C:/Espressif/frameworks/esp-idf-v5.1.2",
     "build_dir":          "D:/projekty_esp/esp-idf-ili9340/build",
